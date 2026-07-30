@@ -67,22 +67,28 @@
   --font-body: 'Afacad', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
 
-  /* Responsive type scale — 16px root baseline. Desktop targets (the value
-     each clamp() settles on at wide viewports) match the approved spec:
-     H1 4rem/64px, H2 3rem/48px, H3 2rem/32px, Subtitle 1.5rem/24px,
-     Body 1rem/16px, Caption 0.875rem/14px. --fs-eyebrow/--fs-micro cover the
-     smallest mono/uppercase label text (kickers, tags, index numbers) that
-     sits below the six-tier scale. --fs-emphasis is the one practical
-     in-between size for card names/titles that are bigger than body copy
-     but smaller than an H3. */
-  --fs-eyebrow: 0.75rem;
-  --fs-small: 0.875rem;
+  /* Responsive type scale — 16px root baseline, 8px steps from 16px up.
+     Desktop targets (the value each clamp() settles on at wide viewports)
+     match the approved scale exactly:
+       --fs-caption 0.875rem/14px  — the floor: tags, captions, metadata,
+                                     index numbers, helper labels. Nothing
+                                     on screen goes smaller than this.
+       --fs-body    1rem/16px      — body copy, and also card/component
+                                     titles (emphasis comes from weight,
+                                     not an off-scale size bump).
+       --fs-lead    1.5rem/24px    — subtitles / section leads.
+       --fs-h3      2rem/32px
+       --fs-h2      2.5rem/40px
+       --fs-h1      3rem/48px      — every section's own heading.
+       --fs-hero    4rem/64px      — the single largest display heading
+                                     (the opening hero's <h1>) only. */
+  --fs-caption: 0.875rem;
   --fs-body: 1rem;
-  --fs-emphasis: 1.125rem;
   --fs-lead: clamp(1.25rem, 2vw, 1.5rem);
   --fs-h3: clamp(1.5rem, 3vw, 2rem);
-  --fs-h2: clamp(2rem, 4vw, 3rem);
-  --fs-h1: clamp(2.5rem, 5vw, 4rem);
+  --fs-h2: clamp(2rem, 3.5vw, 2.5rem);
+  --fs-h1: clamp(2.25rem, 4vw, 3rem);
+  --fs-hero: clamp(2.5rem, 6vw, 4rem);
 
   --lh-tight: 1.1;
   --lh-snug: 1.3;
@@ -96,6 +102,13 @@
      applied to any copy block that doesn't already have a bespoke measure. */
   --measure: 65ch;
   --measure-narrow: 46ch;
+
+  /* Shared width for a section's kicker + heading + lead, so the three sit
+     as one visually centred column (margin-inline: auto) with matching left
+     edges, while wider content below (cards, diagrams, grids) keeps using
+     the full section width. min(90%, ...) keeps it fluid on narrow
+     viewports rather than a rigid fixed width. */
+  --max-copy: min(90%, 56rem);
 
   /* ---- Spacing scale ---- */
   --space-3xs: 0.25rem;
@@ -116,11 +129,18 @@
   --max-content: 1180px;
   --max-wide: 1440px;
 
-  /* Fixed app-header height (padding + 34px logo) — the mobile chapter bar
-     and its dropdown menu anchor below this so the two fixed-position
-     layers never overlap. Keep in sync with .app-header's own padding. */
+  /* Single fixed top-nav height, same at every breakpoint — every section's
+     top padding and `scroll-padding-top` key off this so content, anchor
+     jumps and scrollIntoView calls never land underneath it. */
   --header-h: 4.25rem;
-  --mobile-bar-h: 3.75rem;
+
+  /* Scrolled top-nav background: a semi-transparent tint of --bg-raised-2
+     (#001621) — no existing token carries alpha, so this one does.
+     --border-glass-cyan is the same idea for the scrolled border: the hue
+     is --color-primary-40 (#75d5ee), at low alpha, distinct from the
+     neutral --border-glass* tokens used elsewhere. */
+  --nav-bg-scrolled: rgba(0, 22, 33, 0.88);
+  --border-glass-cyan: rgba(117, 213, 238, 0.18);
 
   /* ---- Motion tokens ---- */
   --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
@@ -139,5 +159,21 @@
   :root {
     /* The experience is intentionally always dark-navy per brand direction;
        this hook exists only so future light-mode work has a single place to start. */
+  }
+}
+
+/* Desktop/large-screen floor: nothing on screen goes below 16px from here
+   up. --fs-caption is the single token every small text role in this
+   project already routes through (tags, index numbers, module taglines,
+   nav labels, chip/badge text, 3D orbit labels, etc.) — since it's the
+   only sub-16px tier in the whole scale, raising it here is sufficient to
+   cover every listed text role at once, with no separate per-role tokens
+   to keep in sync. 1024px matches this project's existing tablet/desktop
+   breakpoint (see components.css's @media (min-width: 768px) and
+   (max-width: 1023px) tablet band). Below 1024px, --fs-caption stays at
+   14px, which is where compact captions/tags/metadata are still allowed. */
+@media (min-width: 64rem) {
+  :root {
+    --fs-caption: 1rem;
   }
 }

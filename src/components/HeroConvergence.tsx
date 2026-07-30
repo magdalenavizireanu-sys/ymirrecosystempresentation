@@ -10,17 +10,16 @@ import { useTabVisible } from '../hooks/useTabVisible';
 const HeroSymbol3D = lazy(() => import('./HeroSymbol3D').then((m) => ({ default: m.HeroSymbol3D })));
 
 /** The inputs that orbit the resolution core, per Ymirr Brand Identity.pdf
- *  page 1 ("From many inputs to one resolved outcome" / page 2 word cloud).
- *  top/left are each label's starting anchor — preserved from the original
- *  static composition so the orbit begins from the familiar layout. */
-const ORBIT_LABELS = [
-  { label: 'Purpose', top: 6, left: 46 },
-  { label: 'Knowledge', top: 14, left: 82 },
-  { label: 'AI Agents', top: 42, left: 90 },
-  { label: 'Orchestration', top: 72, left: 84 },
-  { label: 'Outcomes', top: 74, left: 10 },
-  { label: 'Resolution', top: 38, left: 4 },
-];
+ *  page 1 ("From many inputs to one resolved outcome" / page 2 word cloud). */
+const ORBIT_LABELS = ['Purpose', 'Knowledge', 'AI Agents', 'Orchestration', 'Outcomes', 'Resolution'];
+
+// Evenly distributed around the orbit — a spider-web/governed-system feel
+// reads as deliberate structure, not decoration, and even spacing is also
+// what keeps every label's nearest neighbour the same distance away at any
+// field size. Starts at 12 o'clock (-90°) and goes clockwise in 60° steps.
+function evenPhase(i: number, count: number) {
+  return (i / count) * Math.PI * 2 - Math.PI / 2;
+}
 
 // Shared ellipse every label orbits on — one calm, consistent path rather
 // than seven slightly-different wobbles. These percentages are a starting
@@ -45,13 +44,13 @@ const PILL_HALF_HEIGHT = 22;
 // keep a full orbit clear of the model without the path spilling outside
 // the field — past that point we simplify the composition (a calm static
 // row under the model) instead of forcing geometry that doesn't fit.
-const MIN_ORBIT_FIELD_DIMENSION = 480;
-
-function startingPhase(top: number, left: number) {
-  const dx = (left - 50) / ORBIT_RX_PCT;
-  const dy = (top - 50) / ORBIT_RY_PCT;
-  return Math.atan2(dy, dx);
-}
+// Verified live at a standard 1280px desktop viewport: the field's real
+// height there is exactly 420px (its own CSS min-height), so this must sit
+// below that or the orbit would never actually run on an ordinary desktop.
+const MIN_ORBIT_FIELD_DIMENSION = 400;
+// The second, smaller concentric guide ring, as a fraction of the main
+// orbit — purely decorative depth, doesn't track anything of its own.
+const INNER_GUIDE_SCALE = 0.62;
 
 /** Cinematic-but-restrained opening: the interactive 3D Ymirr symbol at the
  *  centre, with brand-vocabulary pills slowly orbiting it on a shared
@@ -118,13 +117,31 @@ export function HeroConvergence() {
   // jitter-free: no React re-render is involved in moving the pills.
   const items = useMemo(
     () =>
-      ORBIT_LABELS.map((item, i) => ({
-        ...item,
-        phase: startingPhase(item.top, item.left),
-        x: motionValue(0),
-        y: motionValue(0),
-        pulseDelay: i * 0.9 + (i % 2) * 0.45,
-      })),
+      ORBIT_LABELS.map((label, i) => {
+        const phase = evenPhase(i, ORBIT_LABELS.length);
+        return {
+          label,
+          phase,
+          // Static fallback position (reduced motion): the same even angle,
+          // just never animated — so reduced-motion users still see a
+          // properly balanced, non-overlapping arrangement.
+          top: 50 + ORBIT_RY_PCT * Math.sin(phase),
+          left: 50 + ORBIT_RX_PCT * Math.cos(phase),
+          x: motionValue(0),
+          y: motionValue(0),
+          pulseDelay: i * 0.9 + (i % 2) * 0.45,
+        };
+      }),
+    [],
+  );
+
+  // The orbit's own guide ring — a lightly-visible path, not a decoration —
+  // grows and shrinks in lockstep with the labels themselves (same rx/ry
+  // each frame), so it always shows the path they're actually tracing. A
+  // second, smaller concentric ring (fixed proportion of the first) adds
+  // the layered "spider-web" depth without tracking anything of its own.
+  const guide = useMemo(
+    () => ({ width: motionValue(0), height: motionValue(0), innerWidth: motionValue(0), innerHeight: motionValue(0) }),
     [],
   );
 
@@ -146,6 +163,11 @@ export function HeroConvergence() {
     const rx = Math.min(Math.max(baseRx, clearance), maxRx);
     const ry = Math.min(Math.max(baseRy, clearance), maxRy);
 
+    guide.width.set(rx * 2);
+    guide.height.set(ry * 2);
+    guide.innerWidth.set(rx * 2 * INNER_GUIDE_SCALE);
+    guide.innerHeight.set(ry * 2 * INNER_GUIDE_SCALE);
+
     const angleOffset = ((t / 1000) * (Math.PI * 2)) / ORBIT_PERIOD_S;
     for (const item of items) {
       const angle = item.phase + angleOffset;
@@ -157,6 +179,23 @@ export function HeroConvergence() {
   return (
     <div className="hero-convergence" aria-hidden="true">
       <div className={`hero-convergence__field${simplified ? ' hero-convergence__field--simplified' : ''}`} ref={fieldRef}>
+        {/* Spider-web guide: a lightly-visible ring tracing the exact path
+            the labels orbit on — structure you can see, not just infer. */}
+        {!simplified && !reduced && (
+          <>
+            <motion.div
+              className="hero-convergence__guide-ring hero-convergence__guide-ring--inner"
+              style={{ width: guide.innerWidth, height: guide.innerHeight }}
+              aria-hidden="true"
+            />
+            <motion.div
+              className="hero-convergence__guide-ring"
+              style={{ width: guide.width, height: guide.height }}
+              aria-hidden="true"
+            />
+          </>
+        )}
+
         {!simplified &&
           items.map((item, i) => (
             <motion.div
@@ -182,17 +221,30 @@ export function HeroConvergence() {
             </motion.div>
           ))}
 
+        {/* Two elements, deliberately: the outer motion.div owns the
+            entrance opacity/scale animation, the inner plain div owns the
+            static translate(-50%,-50%) centering. Framer-motion writes its
+            own `transform` string the moment it animates anything on an
+            element (even just scale) — if that same element also carried a
+            CSS-class transform:translate(-50%,-50%), framer's write would
+            silently clobber it, leaving the box's top-left corner (not its
+            centre) pinned to the field's 50%/50% point. That was the actual
+            cause of the model reading as displaced toward the lower-right:
+            not the GLTF/bounding-box math, but this box never being
+            centred on screen in the first place. Same reasoning already
+            applied to the orbiting pills below. */}
         <motion.div
-          className="hero-convergence__core"
-          ref={coreRef}
+          className="hero-convergence__core-anchor"
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: reduced ? 0.001 : 0.9, delay: reduced ? 0 : 1.0, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="hero-convergence__core-glow" aria-hidden="true" />
-          <Suspense fallback={<img src="/brand/ymirr-mark.svg" alt="Ymirr™" className="hero-symbol3d__fallback-img" />}>
-            <HeroSymbol3D />
-          </Suspense>
+          <div className="hero-convergence__core" ref={coreRef}>
+            <div className="hero-convergence__core-glow" aria-hidden="true" />
+            <Suspense fallback={<img src="/brand/ymirr-mark.svg" alt="Ymirr™" className="hero-symbol3d__fallback-img" />}>
+              <HeroSymbol3D />
+            </Suspense>
+          </div>
         </motion.div>
 
         {/* Small screens (and any field too short for a collision-free

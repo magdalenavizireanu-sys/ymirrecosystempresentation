@@ -15,6 +15,24 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if (new URLSearchParams(location.search).has('simulateTouch')) {
+        var origMatchMedia = window.matchMedia.bind(window);
+        window.matchMedia = function (q) {
+          if (q.indexOf('hover') !== -1) {
+            return {
+              matches: false,
+              media: q,
+              addEventListener: function () {},
+              removeEventListener: function () {},
+              addListener: function () {},
+              removeListener: function () {},
+            };
+          }
+          return origMatchMedia(q);
+        };
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,28 +1,4 @@
-/* ============ App chrome ============ */
-
-.app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--header-h);
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-sm) clamp(1.25rem, 5vw, 2.5rem);
-  background: linear-gradient(to bottom, rgba(1, 8, 15, 0.75), transparent);
-  pointer-events: none;
-}
-.app-header > * {
-  pointer-events: auto;
-}
-.app-header__chapter {
-  font-family: var(--font-mono);
-  font-size: var(--fs-small);
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
-}
+/* ============ App chrome / top navbar ============ */
 
 .logo {
   display: inline-block;
@@ -33,75 +9,81 @@
   width: var(--logo-size, 34px);
 }
 
-/* ============ Progress rail ============ */
-
-/* Reserve room on the right of every section so the expanded (active/hover)
-   rail item never sits on top of content. Only needed once the rail is
-   actually shown as a vertical rail (>860px, matching the rail/mobile-bar
-   breakpoint below). */
-@media (min-width: 861px) {
-  .section-shell {
-    padding-right: clamp(6rem, 15vw, 12rem);
+/* One fixed nav for the whole app: logo, horizontal chapter row, mode
+   switch and prev/next on desktop/tablet; a compact current-chapter bar on
+   mobile. Replaces the old separate .app-header plus the right-side
+   vertical rail, which together had no reliable way to avoid overlapping
+   page content at in-between viewport widths. */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: linear-gradient(to bottom, rgba(1, 8, 15, 0.55), transparent);
+  border-bottom: 1px solid transparent;
+  transition: background var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard);
+}
+.top-nav.is-scrolled {
+  background: var(--nav-bg-scrolled);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-glass-cyan);
+  box-shadow: 0 12px 30px -22px rgba(0, 0, 0, 0.7);
+}
+@media (prefers-reduced-motion: reduce) {
+  .top-nav {
+    transition: none;
   }
 }
 
-.progress-rail {
-  position: fixed;
-  right: clamp(0.75rem, 2.5vw, 1.75rem);
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 40;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-lg);
+.top-nav__inner {
+  height: var(--header-h);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 0 clamp(1.25rem, 4vw, 2.5rem);
 }
 
-.progress-rail__mobile-bar,
-.progress-rail__mobile-backdrop,
-.progress-rail__mobile-menu {
+.top-nav__logo {
+  display: flex;
+  align-items: center;
+}
+
+.top-nav__chapters {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+.top-nav__chapters ol {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0.3rem 0.15rem;
+}
+.top-nav__chapters ol::-webkit-scrollbar {
   display: none;
 }
 
-.progress-rail__list {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding-left: var(--space-sm);
-}
-
-/* Calm vertical "spine" showing overall progress through the deck — sits
-   behind the index badges, not just an implicit dot-to-dot line. */
-.progress-rail__track {
-  position: absolute;
-  top: 13px;
-  bottom: 13px;
-  left: 1px;
-  width: 2px;
-  background: var(--border-glass);
-  border-radius: var(--radius-pill);
-}
-.progress-rail__track-fill {
-  width: 100%;
-  background: var(--accent-gradient);
-  border-radius: var(--radius-pill);
-  transition: height var(--duration-base) var(--ease-standard);
-}
-
-.progress-rail__item {
+.top-nav__chapter {
+  flex: none;
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   background: none;
   border: none;
   border-radius: var(--radius-pill);
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem 0.4rem;
   color: var(--text-muted);
   transition: color var(--duration-base) var(--ease-standard);
 }
-.progress-rail__item-index {
+.top-nav__chapter-index {
   flex: none;
   display: flex;
   align-items: center;
@@ -110,53 +92,53 @@
   height: 1.6rem;
   border-radius: 50%;
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   border: 1.5px solid var(--border-glass-strong);
   background: var(--bg-raised);
   transition: all var(--duration-base) var(--ease-standard);
 }
-.progress-rail__item-label {
-  font-size: var(--fs-small);
+.top-nav__chapter-title {
+  font-size: var(--fs-caption);
   white-space: nowrap;
   max-width: 0;
   opacity: 0;
   overflow: hidden;
   transition: max-width var(--duration-base) var(--ease-standard), opacity var(--duration-fast) var(--ease-standard);
 }
-/* Inactive items reveal their label on hover/focus — a real, but temporary,
-   affordance; the active item's label is always on (see .is-active below),
+/* Inactive chapters reveal their title on hover/focus — a real, but
+   temporary, affordance; the active chapter's title is always on (below),
    so state never depends on hover alone. */
-.progress-rail__item:hover .progress-rail__item-label,
-.progress-rail__item:focus-visible .progress-rail__item-label {
-  max-width: 12rem;
+.top-nav__chapter:hover .top-nav__chapter-title,
+.top-nav__chapter:focus-visible .top-nav__chapter-title {
+  max-width: 10rem;
   opacity: 1;
 }
-.progress-rail__item:hover,
-.progress-rail__item:focus-visible {
+.top-nav__chapter:hover,
+.top-nav__chapter:focus-visible {
   color: var(--text-secondary);
 }
-.progress-rail__item.is-active {
+.top-nav__chapter.is-active {
   color: var(--text-primary);
   background: var(--bg-glass-strong);
 }
-.progress-rail__item.is-active .progress-rail__item-index {
+.top-nav__chapter.is-active .top-nav__chapter-index {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--bg-void);
   font-weight: 700;
   box-shadow: 0 0 0 4px rgba(26, 186, 227, 0.18);
 }
-.progress-rail__item.is-active .progress-rail__item-label {
-  max-width: 12rem;
+.top-nav__chapter.is-active .top-nav__chapter-title {
+  max-width: 10rem;
   opacity: 1;
   font-weight: 600;
 }
 
-.progress-rail__controls {
+.top-nav__end {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: var(--space-sm);
+  justify-self: end;
 }
 
 /* Two explicit, always-visible options rather than a single ambiguous
@@ -172,7 +154,7 @@
 }
 .mode-switch__option {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   letter-spacing: 0.02em;
   color: var(--text-muted);
   background: none;
@@ -191,11 +173,11 @@
   font-weight: 700;
 }
 
-.progress-rail__arrows {
+.top-nav__arrows {
   display: flex;
   gap: 0.4rem;
 }
-.progress-rail__arrows button {
+.top-nav__arrows button {
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -203,56 +185,41 @@
   background: var(--bg-glass);
   color: var(--text-secondary);
 }
-.progress-rail__arrows button:disabled {
+.top-nav__arrows button:disabled {
   opacity: 0.3;
 }
-.progress-rail__arrows button:not(:disabled):hover,
-.progress-rail__arrows button:not(:disabled):focus-visible {
+.top-nav__arrows button:not(:disabled):hover,
+.top-nav__arrows button:not(:disabled):focus-visible {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-@media (max-width: 860px) {
-  .progress-rail__list,
-  .progress-rail__controls,
-  .progress-rail__track {
+.top-nav__mobile-row,
+.top-nav__mobile-backdrop,
+.top-nav__mobile-menu {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .top-nav__logo,
+  .top-nav__chapters,
+  .top-nav__end {
     display: none;
   }
-  .progress-rail {
-    /* Anchored below .app-header, never on top of it — the mobile bar
-       shows the chapter name + progress more richly than the header's own
-       chapter label, so that label is visually hidden (not removed — it
-       stays for screen-reader announcements) at this width. */
-    top: var(--header-h);
-    right: 0;
-    left: 0;
-    bottom: auto;
-    transform: none;
-    align-items: stretch;
-    gap: 0;
-  }
-  .app-header__chapter {
-    position: absolute;
-    width: 1px;
-    height: 1px;
+  .top-nav__inner {
+    height: auto;
     padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
+    display: block;
   }
 
-  .progress-rail__mobile-bar {
+  .top-nav__mobile-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem clamp(0.75rem, 3vw, 1.25rem);
-    background: rgba(1, 8, 15, 0.82);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--border-glass);
+    min-height: var(--header-h);
   }
-  .progress-rail__mobile-nav {
+  .top-nav__mobile-nav {
     flex: none;
     width: 44px;
     height: 44px;
@@ -261,10 +228,10 @@
     background: var(--bg-glass);
     color: var(--text-secondary);
   }
-  .progress-rail__mobile-nav:disabled {
+  .top-nav__mobile-nav:disabled {
     opacity: 0.3;
   }
-  .progress-rail__mobile-current {
+  .top-nav__mobile-current {
     flex: 1;
     min-width: 0;
     display: flex;
@@ -277,29 +244,29 @@
     min-height: 44px;
     justify-content: center;
   }
-  .progress-rail__mobile-current-text {
+  .top-nav__mobile-current-text {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: var(--fs-small);
+    font-size: var(--fs-caption);
     font-weight: 600;
     color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .progress-rail__mobile-index {
+  .top-nav__mobile-index {
     font-family: var(--font-mono);
-    font-size: var(--fs-eyebrow);
+    font-size: var(--fs-caption);
     color: var(--color-primary);
     flex: none;
   }
-  .progress-rail__mobile-count {
+  .top-nav__mobile-count {
     font-family: var(--font-mono);
-    font-size: var(--fs-eyebrow);
+    font-size: var(--fs-caption);
     color: var(--text-muted);
   }
-  .progress-rail__mobile-fill-track {
+  .top-nav__mobile-fill-track {
     display: block;
     height: 3px;
     width: 100%;
@@ -307,47 +274,45 @@
     border-radius: var(--radius-pill);
     overflow: hidden;
   }
-  .progress-rail__mobile-fill {
+  .top-nav__mobile-fill {
     display: block;
     height: 100%;
     background: var(--accent-gradient);
     transition: width var(--duration-base) var(--ease-standard);
   }
 
-  .progress-rail__mobile-backdrop {
+  .top-nav__mobile-backdrop {
     display: block;
     position: fixed;
     inset: 0;
-    z-index: 39;
+    z-index: 49;
     background: rgba(1, 8, 15, 0.6);
     border: none;
   }
-  .progress-rail__mobile-menu {
+  .top-nav__mobile-menu {
     display: block;
     position: fixed;
-    /* Drops below the header + chapter bar, not over them, so the whole
-       stack always reads top-to-bottom rather than overlapping. */
-    top: calc(var(--header-h) + var(--mobile-bar-h));
+    top: var(--header-h);
     left: 0;
     right: 0;
-    z-index: 41;
-    max-height: calc(80vh - var(--header-h) - var(--mobile-bar-h));
+    z-index: 51;
+    max-height: calc(80vh - var(--header-h));
     overflow-y: auto;
     background: var(--bg-raised);
     border-bottom: 1px solid var(--border-glass-strong);
     box-shadow: var(--shadow-card);
   }
-  .progress-rail__mobile-menu-header {
+  .top-nav__mobile-menu-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-sm);
     padding: var(--space-md) clamp(0.75rem, 3vw, 1.25rem);
-    font-size: var(--fs-small);
+    font-size: var(--fs-caption);
     color: var(--text-muted);
     border-bottom: 1px solid var(--border-glass);
   }
-  .progress-rail__mobile-menu-item {
+  .top-nav__mobile-menu-item {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -358,32 +323,50 @@
     border: none;
     border-bottom: 1px solid var(--border-glass);
     text-align: left;
-    font-size: var(--fs-small);
+    font-size: var(--fs-caption);
     color: var(--text-secondary);
   }
-  .progress-rail__mobile-menu-item.is-active {
+  .top-nav__mobile-menu-item.is-active {
     color: var(--text-primary);
     background: var(--bg-glass-strong);
     font-weight: 600;
   }
 }
 
+/* Between mobile and desktop: same horizontal row as desktop, just tighter
+   spacing, and the chapter row is the one most likely to need to scroll. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .top-nav__inner {
+    gap: var(--space-sm);
+    padding: 0 clamp(1rem, 3vw, 1.5rem);
+  }
+  .top-nav__end {
+    gap: var(--space-2xs);
+  }
+}
+
 /* ============ Section typography ============ */
 
+/* Left-aligned within .section-inner (which is itself centred on the page
+   as a whole) — a shared max-width keeps headings from stretching edge to
+   edge, but the block starts from the section's left grid position like
+   every other section, rather than being centred as its own isolated
+   column. */
 .section-title {
-  font-size: var(--fs-h2);
+  font-size: var(--fs-h1);
   line-height: var(--lh-tight);
   font-weight: 600;
   letter-spacing: var(--ls-tight);
-  max-width: 900px;
+  max-width: var(--max-copy);
   margin-bottom: var(--space-md);
+  text-wrap: balance;
 }
 
 .section-lead {
   font-size: var(--fs-lead);
   line-height: var(--lh-relaxed);
   color: var(--text-secondary);
-  max-width: 720px;
+  max-width: var(--measure);
   margin-bottom: var(--space-lg);
 }
 
@@ -396,7 +379,7 @@
   align-items: center;
 }
 .opening-section__title {
-  font-size: var(--fs-h1);
+  font-size: var(--fs-hero);
   line-height: var(--lh-tight);
   font-weight: 700;
   letter-spacing: var(--ls-tight);
@@ -412,7 +395,7 @@
 }
 .opening-section__cta {
   font-family: var(--font-mono);
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   letter-spacing: 0.04em;
   padding: 0.9rem 1.6rem;
   border-radius: var(--radius-pill);
@@ -455,12 +438,49 @@
   transform: translate(-50%, -50%);
   white-space: nowrap;
 }
-.hero-convergence__core {
+
+/* The orbit's own path, lightly visible — grows/shrinks every frame in
+   lockstep with the labels (same rx/ry), so it always traces where they
+   actually are, never an approximation. */
+.hero-convergence__guide-ring {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: clamp(180px, 22vw, 240px);
-  height: clamp(200px, 24vw, 266px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid var(--border-glass);
+  box-shadow: inset 0 0 40px rgba(26, 186, 227, 0.05);
+  pointer-events: none;
+}
+/* The smaller concentric ring reads as depth, not a second path to follow —
+   fainter, no inset glow of its own. */
+.hero-convergence__guide-ring--inner {
+  border-color: rgba(178, 214, 241, 0.1);
+  box-shadow: none;
+}
+
+/* Outer anchor: purely positional, carries framer-motion's entrance
+   opacity/scale animation. No transform of its own beyond what framer
+   writes — a static CSS transform on the SAME element framer animates
+   would get silently overwritten the moment framer touches `transform`
+   for scale, which is exactly what broke centering here before. */
+.hero-convergence__core-anchor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+/* Inner box: purely visual centring + sizing, static, never touched by
+   framer's animated transform — the two live on different elements so
+   they can never fight (same pattern as .hero-convergence__pill below). */
+.hero-convergence__core {
+  /* Ceiling measured live against the field's real 420px min-height at a
+     standard 1280px desktop viewport: at the old 240×266 ceiling there
+     wasn't enough vertical room left for the orbit to clear the model
+     without the field itself growing taller — this size clears it with
+     real margin (verified against the exact clearance math in
+     HeroConvergence.tsx, not just eyeballed). */
+  width: clamp(170px, 19vw, 200px);
+  height: clamp(190px, 21vw, 220px);
   transform: translate(-50%, -50%);
   filter: drop-shadow(0 0 40px rgba(26, 186, 227, 0.35));
 }
@@ -475,10 +495,12 @@
   justify-content: center;
   gap: var(--space-md);
 }
-.hero-convergence__field--simplified .hero-convergence__core {
+.hero-convergence__field--simplified .hero-convergence__core-anchor {
   position: relative;
   top: auto;
   left: auto;
+}
+.hero-convergence__field--simplified .hero-convergence__core {
   transform: none;
 }
 .hero-convergence__pill-row {
@@ -507,7 +529,7 @@
 }
 @keyframes pill-pulse {
   0%, 100% { transform: scale(1); text-shadow: 0 0 0 rgba(26, 186, 227, 0); }
-  50% { transform: scale(1.035); text-shadow: 0 0 10px rgba(26, 186, 227, 0.45); }
+  50% { transform: scale(1.04); text-shadow: 0 0 14px rgba(26, 186, 227, 0.6); }
 }
 
 /* Controlled, slow breathing glow behind the central symbol — "ambient
@@ -557,7 +579,7 @@
   object-fit: contain;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .opening-section__layout {
     grid-template-columns: 1fr;
   }
@@ -570,7 +592,7 @@
     min-height: 320px;
   }
   .hero-convergence__pill {
-    font-size: var(--fs-eyebrow);
+    font-size: var(--fs-caption);
     padding: 0.4rem 0.8rem;
   }
 }
@@ -621,7 +643,7 @@
 }
 .flow-chain__step {
   flex: none;
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
@@ -662,7 +684,7 @@
   position: absolute;
   left: 0;
   bottom: 0;
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
   max-width: 100%;
 }
@@ -687,7 +709,7 @@
   padding: 0.6rem 0.7rem;
   border-radius: var(--radius-sm);
   color: var(--text-muted);
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
 }
 .comparison-panel__row-btn.is-active {
   background: var(--bg-glass-strong);
@@ -707,7 +729,7 @@
   padding-left: var(--space-md);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .comparison-panel__flows {
     grid-template-columns: 1fr;
   }
@@ -783,7 +805,7 @@
   border-radius: var(--radius-sm);
   background: var(--bg-glass);
   color: var(--text-secondary);
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   margin-bottom: var(--space-lg);
 }
 .governance-diagram__detail strong {
@@ -800,10 +822,10 @@
 .governance-node--input .governance-node__name {
   color: var(--color-primary);
   font-weight: 600;
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
 }
 .governance-node--input .governance-node__detail {
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
   line-height: var(--lh-snug);
 }
@@ -820,11 +842,11 @@
 }
 .governance-node--stage .governance-node__index {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
 }
 .governance-node--stage .governance-node__name {
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   font-weight: 600;
 }
 .governance-node--stage:hover,
@@ -849,16 +871,16 @@
 }
 .governance-node--outcome .governance-node__name {
   font-weight: 700;
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   margin-bottom: 0.2rem;
 }
 .governance-node--outcome .governance-node__detail {
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
   line-height: var(--lh-snug);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .governance-diagram {
     flex-direction: column;
     align-items: stretch;
@@ -911,7 +933,7 @@
 }
 .voice-strip__label {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -935,14 +957,14 @@
   font-style: italic;
   font-weight: 600;
   color: var(--text-secondary);
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
 }
 .voice-strip__body {
   color: var(--text-muted);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   .principle-grid {
     grid-template-columns: 1fr;
   }
@@ -963,7 +985,7 @@
 }
 .journey-flow__loop-label {
   fill: var(--text-muted);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   font-family: var(--font-mono);
 }
 .journey-flow__nodes {
@@ -993,12 +1015,12 @@
 }
 .journey-node__index {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
 }
 .journey-node__name {
   font-weight: 600;
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
 }
 .journey-node.is-active {
   border-color: var(--border-glass-strong);
@@ -1024,7 +1046,7 @@
   gap: var(--space-md);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .journey-flow__svg {
     display: none;
   }
@@ -1047,14 +1069,14 @@
 
 .module-card__label {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-accent);
   margin-bottom: 0.35rem;
 }
 .module-card__text {
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   line-height: var(--lh-normal);
   color: var(--text-secondary);
   max-width: var(--measure);
@@ -1066,7 +1088,7 @@
   margin-top: 0.6rem;
 }
 .tag-chip {
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   font-family: var(--font-mono);
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius-pill);
@@ -1082,7 +1104,7 @@
   color: #e6b45a;
 }
 .module-card__note {
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   color: #e6b45a;
   background: rgba(230, 180, 90, 0.08);
   border: 1px solid rgba(230, 180, 90, 0.25);
@@ -1099,7 +1121,7 @@
   margin-bottom: var(--space-lg);
 }
 .filter-chip {
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   padding: 0.45rem 0.9rem;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-glass);
@@ -1112,14 +1134,59 @@
   background: rgba(26, 186, 227, 0.08);
 }
 
+/* A wrapping flex row rather than CSS grid: grid's justify-content only
+   ever centres leftover space at the container level, not per row, so a
+   partial last row would hug the left edge with bare space on the right.
+   Flexbox re-centres on every wrapped line independently — the last row
+   (module count varies with the active journey-stage filter) always reads
+   as deliberate, whatever it happens to contain. --space-md is exactly
+   24px at the 16px root, so this is the requested 24px both directions
+   without a hardcoded value. */
 .module-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
   gap: var(--space-md);
+}
+.module-grid__item {
+  flex: 0 1 100%;
+  min-width: 0;
+  /* align-items:stretch only equalises height *within* one wrapped row —
+     rows with naturally shorter content (fewer tag chips, shorter role
+     text even after the 3-line clamp) would otherwise end up visibly
+     shorter than a row with longer content. A shared min-height, applied
+     to every item identically, makes stretch equalise every row to the
+     same floor instead — measured against this content's actual tallest
+     case (icon+name+3-line role+wrapped tag row), not an arbitrary guess. */
+  min-height: 400px;
+}
+.module-grid__item > * {
+  height: 100%;
+}
+@media (min-width: 48rem) {
+  .module-grid__item {
+    flex-basis: calc((100% - var(--space-md)) / 2);
+  }
+}
+@media (min-width: 64rem) {
+  .module-grid__item {
+    flex-basis: calc((100% - 3 * var(--space-md)) / 4);
+  }
 }
 
 .module-card {
+  display: flex;
+  flex-direction: column;
   padding: var(--space-md);
+}
+/* Scoped to a direct child of .module-card specifically — .module-card__stages
+   is also reused as a plain tag-chip row inside JourneyFlow/EcosystemMap/
+   ScenarioTimeline, where "push to the bottom of a stretched flex column"
+   wouldn't make sense. */
+.module-card > .module-card__stages {
+  margin-top: auto;
+  padding-top: var(--space-sm);
 }
 .module-card__trigger {
   display: grid;
@@ -1152,24 +1219,31 @@
 }
 .module-card__name {
   font-weight: 600;
-  font-size: var(--fs-emphasis);
+  font-size: var(--fs-body);
 }
 .module-card__tagline {
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
 }
 .module-card__chevron {
-  font-size: var(--fs-emphasis);
+  font-size: var(--fs-body);
   color: var(--text-muted);
   width: 24px;
   text-align: center;
 }
 .module-card__role {
   margin-top: var(--space-sm);
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
   line-height: var(--lh-normal);
   max-width: var(--measure);
+  /* Caps the one variable-length piece of the always-visible card content
+     to the same number of lines everywhere, so collapsed-card height stays
+     consistent across modules whose role text runs shorter or longer. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 .module-card__details {
   overflow: hidden;
@@ -1218,7 +1292,7 @@
 }
 .ecosystem-map__band-label {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -1254,7 +1328,7 @@
   box-shadow: var(--shadow-glow);
 }
 .arch-node__name {
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   font-weight: 600;
   color: var(--text-secondary);
 }
@@ -1263,12 +1337,12 @@
   color: var(--text-primary);
 }
 .arch-node__tagline {
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
 }
 .arch-node__badge {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #e6b45a;
@@ -1292,7 +1366,7 @@
   border-color: var(--border-glass-strong);
 }
 .arch-node--product .arch-node__name {
-  font-size: var(--fs-emphasis);
+  font-size: var(--fs-body);
 }
 
 /* Foundation — a single wide anchor, not a stack of peer nodes. */
@@ -1306,7 +1380,7 @@
   border-color: var(--border-glass-strong);
 }
 .arch-node--foundation .arch-node__name {
-  font-size: var(--fs-emphasis);
+  font-size: var(--fs-body);
 }
 
 .ecosystem-map__detail {
@@ -1315,7 +1389,7 @@
   min-height: 4.5rem;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .arch-node--core {
     width: calc(50% - 0.3rem);
   }
@@ -1371,13 +1445,13 @@
   margin-bottom: var(--space-sm);
 }
 .entity-card__contribution {
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
   margin-bottom: var(--space-md);
 }
 .entity-card__trigger {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   letter-spacing: 0.04em;
   color: var(--color-primary);
   background: none;
@@ -1392,10 +1466,10 @@
   flex-direction: column;
   gap: var(--space-sm);
   color: var(--text-secondary);
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .entity-grid {
     grid-template-columns: 1fr;
   }
@@ -1414,7 +1488,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   color: #e6b45a;
   background: rgba(230, 180, 90, 0.08);
   border: 1px solid rgba(230, 180, 90, 0.25);
@@ -1451,7 +1525,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   border: 1px solid var(--border-glass-strong);
   color: var(--color-primary);
   background: rgba(1, 22, 33, 0.6);
@@ -1465,7 +1539,20 @@
 .value-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  /* Every row's cards stretch to the tallest card in that row (grid default
+     for auto-rows is content-sized, not equal — 1fr forces the match). */
+  grid-auto-rows: 1fr;
   gap: var(--space-md);
+  align-items: stretch;
+}
+/* Desktop (this project's 1024px threshold): a fixed 4-column grid, not an
+   auto-fill count that varies with viewport width — 8 cards read as a
+   deliberate 01-04 / 05-08 pair of rows instead of however many columns
+   happen to fit. Below 1024px the auto-fill above still reflows normally. */
+@media (min-width: 64rem) {
+  .value-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 .value-tile {
   display: flex;
@@ -1473,29 +1560,44 @@
   align-items: flex-start;
   gap: 0.6rem;
   width: 100%;
+  height: 100%;
   padding: var(--space-md);
   text-align: left;
   background: rgba(178, 214, 241, 0.03);
 }
+.value-tile__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  color: var(--color-primary);
+}
+.value-tile__icon svg {
+  width: 22px;
+  height: 22px;
+}
 .value-tile__index {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
 }
 /* The transformation, always visible: current-state pain, a small arrow,
-   then the business result — legible at a glance before anyone clicks. */
+   then the business result — legible at a glance, no click required. */
 .value-tile__transform {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
 }
 .value-tile__problem {
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
   line-height: var(--lh-snug);
 }
 .value-tile__arrow {
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   color: var(--color-primary-30);
   line-height: 1;
 }
@@ -1508,20 +1610,17 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: all var(--duration-base) var(--ease-standard);
-}
-.value-tile__mechanism.is-visible {
-  max-height: 320px;
-  opacity: 1;
-  padding-top: 0.4rem;
+  /* Pushed to the bottom of the card (mt:auto) so tiles with a shorter
+     problem/title still line their mechanism block up with taller
+     neighbours in the same row, instead of floating at different heights. */
+  margin-top: auto;
+  padding-top: 0.6rem;
   border-top: 1px solid var(--border-glass);
+  width: 100%;
 }
 .value-tile__mechanism-label {
   font-family: var(--font-mono);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-accent);
@@ -1535,7 +1634,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   padding: 0.2rem 0.55rem 0.2rem 0.3rem;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-glass-strong);
@@ -1549,13 +1648,212 @@
   border-radius: 4px;
 }
 .value-tile__mechanism-text {
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
   line-height: var(--lh-normal);
+  /* Caps every card's mechanism copy to the same number of lines, so text
+     length differences between items don't reintroduce height mismatches
+     that grid-auto-rows alone wouldn't catch within a single row. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  /* -webkit-box is its own box type, not a plain block — as a flex-column
+     child it doesn't auto-stretch to the parent's width like a normal <p>
+     does, and collapses to a 0-width box (breaking scrollHeight/clientHeight
+     truncation checks) without this. */
+  width: 100%;
 }
-.value-tile.is-open {
-  border-color: var(--border-glass-strong);
-  background: var(--card-gradient);
+
+/* ============ Truncated-text disclosure (Business Value cards) ============ */
+
+/* Unstyled interactive wrapper around an existing clamped element — the
+   clamped <p> inside keeps its own class/styling untouched, so nothing
+   about the card's look changes just because a clamp is now readable. */
+.disclosure-trigger {
+  all: unset;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.disclosure-trigger:hover p,
+.disclosure-trigger:focus-visible p {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-glass-strong);
+}
+.disclosure-trigger:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Shared shell for the desktop tooltip and the tablet popover. */
+.disclosure-panel {
+  position: relative;
+  max-width: min(90vw, 320px);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-glass-cyan);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: var(--space-sm) var(--space-md);
+  z-index: 60;
+  animation: disclosure-in var(--duration-fast) var(--ease-standard);
+}
+.disclosure-panel[data-state='closed'] {
+  animation: disclosure-out var(--duration-fast) var(--ease-standard);
+}
+@keyframes disclosure-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes disclosure-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.96); }
+}
+.disclosure-panel__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-accent);
+  margin-bottom: 0.35rem;
+}
+.disclosure-panel__text {
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--text-primary);
+}
+.disclosure-panel__arrow {
+  fill: var(--bg-raised);
+}
+.disclosure-panel__close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.disclosure-panel__close:hover,
+.disclosure-panel__close:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Mobile bottom sheet. */
+.disclosure-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 8, 15, 0.7);
+  z-index: 60;
+  animation: disclosure-overlay-in var(--duration-base) var(--ease-standard);
+}
+.disclosure-overlay[data-state='closed'] {
+  animation: disclosure-overlay-out var(--duration-base) var(--ease-standard);
+}
+@keyframes disclosure-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes disclosure-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.disclosure-overlay--reduced {
+  animation: none;
+}
+
+.disclosure-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-glass-cyan);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg) var(--space-md) var(--space-xl);
+  animation: disclosure-sheet-in var(--duration-base) var(--ease-standard);
+}
+.disclosure-sheet[data-state='closed'] {
+  animation: disclosure-sheet-out var(--duration-base) var(--ease-standard);
+}
+@keyframes disclosure-sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes disclosure-sheet-out {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+.disclosure-sheet--reduced {
+  animation: none;
+}
+.disclosure-sheet__handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border-glass-strong);
+  border-radius: var(--radius-pill);
+  margin: 0 auto var(--space-md);
+}
+.disclosure-sheet__title {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  color: var(--text-primary);
+  padding-right: 2.5rem;
+}
+.disclosure-sheet__text {
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--text-secondary);
+}
+.disclosure-sheet__close {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  font-size: 1.3rem;
+}
+.disclosure-sheet__close:hover,
+.disclosure-sheet__close:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disclosure-panel,
+  .disclosure-panel[data-state='closed'],
+  .disclosure-overlay,
+  .disclosure-overlay[data-state='closed'],
+  .disclosure-sheet,
+  .disclosure-sheet[data-state='closed'] {
+    animation: none;
+  }
 }
 
 /* ============ Closing ============ */
@@ -1570,15 +1868,64 @@
   width: 100%;
   height: 100%;
 }
+
+/* Each ring is the thing that actually rotates (a plain CSS animation, not
+   a per-frame JS loop — the radius is fixed at build time here, unlike the
+   hero orbit, so there's nothing that needs runtime measurement). Every
+   item inside counter-rotates at the same rate so the icon artwork itself
+   never spins — only its position travels around the circle. */
+.closing-assembly__ring {
+  position: absolute;
+  inset: 0;
+  animation-name: closing-orbit-cw;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.closing-assembly__ring--reverse {
+  animation-name: closing-orbit-ccw;
+}
+.closing-assembly__ring--static {
+  animation: none;
+}
+@keyframes closing-orbit-cw {
+  to { transform: rotate(360deg); }
+}
+@keyframes closing-orbit-ccw {
+  to { transform: rotate(-360deg); }
+}
+
+.closing-assembly__guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid var(--border-glass);
+  pointer-events: none;
+}
+
 .closing-assembly__item {
   position: absolute;
   transform: translate(-50%, -50%);
   width: 44px;
   height: 44px;
+  opacity: 0.85;
+}
+.closing-assembly__item-counter {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.85;
+  animation-name: closing-orbit-ccw;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.closing-assembly__item-counter--reverse {
+  animation-name: closing-orbit-cw;
+}
+.closing-assembly__item-counter--static {
+  animation: none;
 }
 .closing-assembly__item img {
   max-width: 100%;
@@ -1593,10 +1940,13 @@
 }
 
 .closing-statement {
-  font-size: var(--fs-h2);
+  font-size: var(--fs-h1);
   font-weight: 700;
   line-height: var(--lh-tight);
-  max-width: 20ch;
+  /* Wide enough for ~2-3 balanced lines at desktop (was 20ch, wrapping the
+     full sentence into 4+ narrow lines); still shrinks on small screens via
+     the vw term, and never forces a manual <br>. */
+  max-width: clamp(24ch, 55vw, 46ch);
   text-align: center;
   margin: 0 auto var(--space-xl);
 }
@@ -1618,15 +1968,15 @@
 .manifesto-list__title {
   color: var(--color-primary);
   font-weight: 600;
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
 }
 .manifesto-list__body {
   color: var(--text-secondary);
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   line-height: var(--lh-normal);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .manifesto-list {
     grid-template-columns: 1fr;
   }
@@ -1645,7 +1995,7 @@
   width: 100%;
   background: none;
   border: none;
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
   text-align: left;
 }
@@ -1663,7 +2013,7 @@
   gap: 0.5rem;
 }
 .closing-notes__list li {
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   line-height: var(--lh-normal);
   color: var(--text-muted);
   padding-left: 1.1rem;

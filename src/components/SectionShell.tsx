@@ -28,9 +28,7 @@ export function KickerTitle({ index, title }: { index: string; title: string }) 
     <div className="kicker-title">
       <span className="index">{index}</span>
       <span className="rule" aria-hidden="true" />
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-small)', color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
-        {title}
-      </span>
+      <span className="kicker-title__label">{title}</span>
     </div>
   );
 }

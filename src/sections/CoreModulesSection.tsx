@@ -51,9 +51,16 @@ export function CoreModulesSection() {
         ))}
       </div>
 
+      {/* A wrapping flex row, not CSS grid: grid's justify-content only
+          centres leftover space at the container level, not per row, so a
+          partial last row (14 modules ÷ 4 columns leaves 2) would hug the
+          left edge with a bare gap on the right. Flexbox's justify-content
+          re-centres on every wrapped line independently, so that last row
+          reads as deliberate regardless of how many items the active
+          filter leaves visible. */}
       <div className="module-grid">
         {visible.map((m, i) => (
-          <Reveal key={m.id} delay={Math.min(i, 8) * 0.04}>
+          <Reveal key={m.id} delay={Math.min(i, 8) * 0.04} className="module-grid__item">
             <ModuleCard module={m} />
           </Reveal>
         ))}

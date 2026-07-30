@@ -7,6 +7,10 @@
 
 html {
   scroll-behavior: smooth;
+  /* Every scroll-to-section call (TopNav's chapter clicks, prev/next, the
+     browser's own anchor jumps) stops this many pixels short of the very
+     top, so a section heading never lands underneath the fixed navbar. */
+  scroll-padding-top: var(--header-h);
 }
 
 /* "Guided" presentation mode: gentle, deck-like scroll-snap, one chapter at a
@@ -107,7 +111,7 @@ img {
 
 .eyebrow {
   font-family: var(--font-mono), var(--font-body);
-  font-size: var(--fs-eyebrow);
+  font-size: var(--fs-caption);
   letter-spacing: var(--ls-eyebrow);
   text-transform: uppercase;
   color: var(--text-accent);
@@ -172,7 +176,7 @@ img {
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-glass-strong);
   background: linear-gradient(180deg, rgba(178, 214, 241, 0.1), rgba(1, 22, 33, 0.6));
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   color: var(--text-secondary);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
@@ -186,7 +190,7 @@ img {
 
 .kicker-title .index {
   font-family: var(--font-mono), var(--font-body);
-  font-size: var(--fs-small);
+  font-size: var(--fs-caption);
   color: var(--text-muted);
   letter-spacing: 0.08em;
 }
@@ -195,6 +199,13 @@ img {
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, var(--border-glass-strong), transparent);
+}
+
+.kicker-title__label {
+  font-family: var(--font-mono), var(--font-body);
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
 }
 
 .gradient-text {

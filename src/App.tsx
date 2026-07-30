@@ -1,8 +1,6 @@
-import { useMemo } from 'react';
 import { PresentationModeProvider } from './hooks/usePresentationMode';
 import { useActiveSection, type SectionMeta } from './hooks/useActiveSection';
-import { ProgressRail } from './components/ProgressRail';
-import { Logo } from './components/Logo';
+import { TopNav } from './components/TopNav';
 
 import { OpeningSection } from './sections/OpeningSection';
 import { ProblemSection } from './sections/ProblemSection';
@@ -30,18 +28,18 @@ const SECTIONS: SectionMeta[] = [
 
 function AppShell() {
   const activeId = useActiveSection(SECTIONS);
-  const activeLabel = useMemo(() => SECTIONS.find((s) => s.id === activeId)?.label ?? '', [activeId]);
+  const activeLabel = SECTIONS.find((s) => s.id === activeId)?.label ?? '';
 
   return (
     <>
       <a href="#main" className="skip-link">Skip to content</a>
 
-      <header className="app-header">
-        <Logo size={34} />
-        <span className="app-header__chapter" aria-live="polite">{activeLabel}</span>
-      </header>
+      {/* Screen-reader-only announcer: TopNav's own current-chapter text is
+          only visible on the mobile layout, but the chapter change should
+          be announced at every viewport width. */}
+      <span className="visually-hidden" aria-live="polite">{activeLabel}</span>
 
-      <ProgressRail sections={SECTIONS} activeId={activeId} />
+      <TopNav sections={SECTIONS} activeId={activeId} />
 
       <main id="main">
         <OpeningSection />
