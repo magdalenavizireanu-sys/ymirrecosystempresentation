@@ -8,7 +8,9 @@
       "Bash(cd \"/Users/maria-magdalenavizireanu/Library/Application Support/Claude/local-agent-mode-sessions/05f68a54-1645-4710-8ce7-ae0c58e1c939/417ded92-32b2-49ab-92be-56889c7e7319/local_3cd3be57-60cc-4413-9ba7-d5e58c1b912b/outputs/ymirr-ecosystem-presentation\" && find . -maxdepth 1 -iname \"*.md\" -o -maxdepth 1 -iname \"*.pdf\" | grep -v node_modules; find .. -maxdepth 2 -iname \"*ymirr*\" 2>/dev/null | grep -v node_modules; find .. -maxdepth 2 -iname \"*.pdf\" 2>/dev/null)",
       "Bash(sort -t: -k1,1)",
       "Bash(python3 -)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(git remote *)",
+      "Bash(git push *)"
     ]
   }
 }
