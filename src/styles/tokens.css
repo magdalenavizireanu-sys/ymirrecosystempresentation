@@ -1,0 +1,143 @@
+/*
+  Ymirr™ design tokens
+  Source: "Ymirr Brand Identity.pdf" — Tints & Shades page, Typography page,
+  Symbol Anatomy pages, Tone of Voice page.
+  All hex values below are transcribed directly from that document.
+*/
+
+:root {
+  /* ---- Brand colour system (verbatim from brand identity PDF) ---- */
+  --color-primary: #1abae3;         /* PRIMARY — cyan */
+  --color-primary-90: #e8f8fc;
+  --color-primary-60: #a3e3f3;
+  --color-primary-40: #75d5ee;
+  --color-primary-15: #169ec0;      /* used as a mid-dark accent / hover state */
+  --color-primary-30: #12829e;
+  --color-primary-60d: #0a4a5a;     /* dark shade */
+
+  --color-secondary: #012030;       /* SECONDARY — deep navy (base background) */
+  --color-secondary-90: #e5e8ea;
+  --color-secondary-60: #99a5ac;
+  --color-secondary-40: #667982;
+  --color-secondary-15: #001b28;
+  --color-secondary-30: #001621;
+  --color-secondary-60d: #000c13;
+
+  --color-tertiary: #4199de;        /* TERTIARY — mid blue */
+  --color-tertiary-90: #ecf4fb;
+  --color-tertiary-60: #b3d6f1;
+  --color-tertiary-40: #8dc1eb;
+  --color-tertiary-15: #3782bc;
+  --color-tertiary-30: #2d6b9b;
+  --color-tertiary-60d: #1a3d58;
+
+  --color-black: #000000;
+  --color-dark-gray: #141414;
+  --color-mid-gray: #525252;
+  --color-light-gray: #767676;
+  --color-dark-silver: #dedddb;
+  --color-light-silver: #f5f5f4;
+  --color-white: #ffffff;
+
+  /* ---- Semantic surface tokens (built from the above) ---- */
+  --bg-void: var(--color-black);
+  --bg-base: var(--color-secondary);
+  --bg-raised: var(--color-secondary-15);
+  --bg-raised-2: var(--color-secondary-30);
+  --bg-glass: rgba(178, 214, 241, 0.06);
+  --bg-glass-strong: rgba(178, 214, 241, 0.1);
+  --border-glass: rgba(178, 214, 241, 0.18);
+  --border-glass-strong: rgba(178, 214, 241, 0.32);
+
+  --text-primary: var(--color-white);
+  --text-secondary: rgba(229, 232, 234, 0.72);
+  /* 0.65 alpha measured under 4.5:1 (WCAG AA normal text) against both
+     --bg-void and --bg-base — raised to 0.8, which clears 4.5:1 against
+     both. Muted text in this deck is almost always small (eyebrow/caption
+     scale), so it doesn't qualify for the relaxed "large text" 3:1 floor. */
+  --text-muted: rgba(153, 165, 172, 0.8);
+  --text-accent: var(--color-primary);
+
+  --accent-gradient: linear-gradient(135deg, var(--color-primary-60) 0%, var(--color-primary) 45%, var(--color-tertiary) 100%);
+  --surface-gradient: radial-gradient(120% 120% at 15% 0%, #0b3a52 0%, var(--bg-base) 45%, var(--color-black) 100%);
+  --card-gradient: linear-gradient(160deg, rgba(178, 214, 241, 0.09) 0%, rgba(1, 32, 48, 0.4) 100%);
+
+  /* ---- Typography (Afacad, per brand identity Typography page) ---- */
+  --font-display: 'Afacad', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Afacad', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+  /* Responsive type scale — 16px root baseline. Desktop targets (the value
+     each clamp() settles on at wide viewports) match the approved spec:
+     H1 4rem/64px, H2 3rem/48px, H3 2rem/32px, Subtitle 1.5rem/24px,
+     Body 1rem/16px, Caption 0.875rem/14px. --fs-eyebrow/--fs-micro cover the
+     smallest mono/uppercase label text (kickers, tags, index numbers) that
+     sits below the six-tier scale. --fs-emphasis is the one practical
+     in-between size for card names/titles that are bigger than body copy
+     but smaller than an H3. */
+  --fs-eyebrow: 0.75rem;
+  --fs-small: 0.875rem;
+  --fs-body: 1rem;
+  --fs-emphasis: 1.125rem;
+  --fs-lead: clamp(1.25rem, 2vw, 1.5rem);
+  --fs-h3: clamp(1.5rem, 3vw, 2rem);
+  --fs-h2: clamp(2rem, 4vw, 3rem);
+  --fs-h1: clamp(2.5rem, 5vw, 4rem);
+
+  --lh-tight: 1.1;
+  --lh-snug: 1.3;
+  --lh-normal: 1.6;
+  --lh-relaxed: 1.75;
+
+  --ls-eyebrow: 0.22em;
+  --ls-tight: -0.01em;
+
+  /* Line-length caps (character-based so they scale with font-size) —
+     applied to any copy block that doesn't already have a bespoke measure. */
+  --measure: 65ch;
+  --measure-narrow: 46ch;
+
+  /* ---- Spacing scale ---- */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+  --space-2xl: 6rem;
+  --space-3xl: 9rem;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  --max-content: 1180px;
+  --max-wide: 1440px;
+
+  /* Fixed app-header height (padding + 34px logo) — the mobile chapter bar
+     and its dropdown menu anchor below this so the two fixed-position
+     layers never overlap. Keep in sync with .app-header's own padding. */
+  --header-h: 4.25rem;
+  --mobile-bar-h: 3.75rem;
+
+  /* ---- Motion tokens ---- */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-emphatic: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 180ms;
+  --duration-base: 420ms;
+  --duration-slow: 700ms;
+  --duration-scene: 1100ms;
+
+  /* ---- Elevation ---- */
+  --shadow-card: 0 20px 60px -25px rgba(1, 8, 15, 0.75);
+  --shadow-glow: 0 0 60px -12px rgba(26, 186, 227, 0.35);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* The experience is intentionally always dark-navy per brand direction;
+       this hook exists only so future light-mode work has a single place to start. */
+  }
+}

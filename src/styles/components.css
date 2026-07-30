@@ -1,0 +1,1677 @@
+/* ============ App chrome ============ */
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-h);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) clamp(1.25rem, 5vw, 2.5rem);
+  background: linear-gradient(to bottom, rgba(1, 8, 15, 0.75), transparent);
+  pointer-events: none;
+}
+.app-header > * {
+  pointer-events: auto;
+}
+.app-header__chapter {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.logo {
+  display: inline-block;
+  height: var(--logo-size, 34px);
+  width: auto;
+}
+.logo--mark {
+  width: var(--logo-size, 34px);
+}
+
+/* ============ Progress rail ============ */
+
+/* Reserve room on the right of every section so the expanded (active/hover)
+   rail item never sits on top of content. Only needed once the rail is
+   actually shown as a vertical rail (>860px, matching the rail/mobile-bar
+   breakpoint below). */
+@media (min-width: 861px) {
+  .section-shell {
+    padding-right: clamp(6rem, 15vw, 12rem);
+  }
+}
+
+.progress-rail {
+  position: fixed;
+  right: clamp(0.75rem, 2.5vw, 1.75rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-lg);
+}
+
+.progress-rail__mobile-bar,
+.progress-rail__mobile-backdrop,
+.progress-rail__mobile-menu {
+  display: none;
+}
+
+.progress-rail__list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: var(--space-sm);
+}
+
+/* Calm vertical "spine" showing overall progress through the deck — sits
+   behind the index badges, not just an implicit dot-to-dot line. */
+.progress-rail__track {
+  position: absolute;
+  top: 13px;
+  bottom: 13px;
+  left: 1px;
+  width: 2px;
+  background: var(--border-glass);
+  border-radius: var(--radius-pill);
+}
+.progress-rail__track-fill {
+  width: 100%;
+  background: var(--accent-gradient);
+  border-radius: var(--radius-pill);
+  transition: height var(--duration-base) var(--ease-standard);
+}
+
+.progress-rail__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.5rem;
+  color: var(--text-muted);
+  transition: color var(--duration-base) var(--ease-standard);
+}
+.progress-rail__item-index {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  border: 1.5px solid var(--border-glass-strong);
+  background: var(--bg-raised);
+  transition: all var(--duration-base) var(--ease-standard);
+}
+.progress-rail__item-label {
+  font-size: var(--fs-small);
+  white-space: nowrap;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-width var(--duration-base) var(--ease-standard), opacity var(--duration-fast) var(--ease-standard);
+}
+/* Inactive items reveal their label on hover/focus — a real, but temporary,
+   affordance; the active item's label is always on (see .is-active below),
+   so state never depends on hover alone. */
+.progress-rail__item:hover .progress-rail__item-label,
+.progress-rail__item:focus-visible .progress-rail__item-label {
+  max-width: 12rem;
+  opacity: 1;
+}
+.progress-rail__item:hover,
+.progress-rail__item:focus-visible {
+  color: var(--text-secondary);
+}
+.progress-rail__item.is-active {
+  color: var(--text-primary);
+  background: var(--bg-glass-strong);
+}
+.progress-rail__item.is-active .progress-rail__item-index {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--bg-void);
+  font-weight: 700;
+  box-shadow: 0 0 0 4px rgba(26, 186, 227, 0.18);
+}
+.progress-rail__item.is-active .progress-rail__item-label {
+  max-width: 12rem;
+  opacity: 1;
+  font-weight: 600;
+}
+
+.progress-rail__controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-sm);
+}
+
+/* Two explicit, always-visible options rather than a single ambiguous
+   toggle — the active one is unmistakable without relying on colour alone
+   (filled background + text weight change together). */
+.mode-switch {
+  display: flex;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-pill);
+  background: var(--bg-glass);
+  padding: 0.2rem;
+  gap: 0.2rem;
+}
+.mode-switch__option {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 0.75rem;
+  white-space: nowrap;
+  transition: all var(--duration-base) var(--ease-standard);
+}
+.mode-switch__option:hover {
+  color: var(--text-secondary);
+}
+.mode-switch__option.is-active {
+  background: var(--color-primary);
+  color: var(--bg-void);
+  font-weight: 700;
+}
+
+.progress-rail__arrows {
+  display: flex;
+  gap: 0.4rem;
+}
+.progress-rail__arrows button {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+}
+.progress-rail__arrows button:disabled {
+  opacity: 0.3;
+}
+.progress-rail__arrows button:not(:disabled):hover,
+.progress-rail__arrows button:not(:disabled):focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+@media (max-width: 860px) {
+  .progress-rail__list,
+  .progress-rail__controls,
+  .progress-rail__track {
+    display: none;
+  }
+  .progress-rail {
+    /* Anchored below .app-header, never on top of it — the mobile bar
+       shows the chapter name + progress more richly than the header's own
+       chapter label, so that label is visually hidden (not removed — it
+       stays for screen-reader announcements) at this width. */
+    top: var(--header-h);
+    right: 0;
+    left: 0;
+    bottom: auto;
+    transform: none;
+    align-items: stretch;
+    gap: 0;
+  }
+  .app-header__chapter {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .progress-rail__mobile-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem clamp(0.75rem, 3vw, 1.25rem);
+    background: rgba(1, 8, 15, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-glass);
+  }
+  .progress-rail__mobile-nav {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border-glass);
+    background: var(--bg-glass);
+    color: var(--text-secondary);
+  }
+  .progress-rail__mobile-nav:disabled {
+    opacity: 0.3;
+  }
+  .progress-rail__mobile-current {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    padding: 0.3rem 0.25rem;
+    text-align: left;
+    min-height: 44px;
+    justify-content: center;
+  }
+  .progress-rail__mobile-current-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--fs-small);
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .progress-rail__mobile-index {
+    font-family: var(--font-mono);
+    font-size: var(--fs-eyebrow);
+    color: var(--color-primary);
+    flex: none;
+  }
+  .progress-rail__mobile-count {
+    font-family: var(--font-mono);
+    font-size: var(--fs-eyebrow);
+    color: var(--text-muted);
+  }
+  .progress-rail__mobile-fill-track {
+    display: block;
+    height: 3px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .progress-rail__mobile-fill {
+    display: block;
+    height: 100%;
+    background: var(--accent-gradient);
+    transition: width var(--duration-base) var(--ease-standard);
+  }
+
+  .progress-rail__mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: rgba(1, 8, 15, 0.6);
+    border: none;
+  }
+  .progress-rail__mobile-menu {
+    display: block;
+    position: fixed;
+    /* Drops below the header + chapter bar, not over them, so the whole
+       stack always reads top-to-bottom rather than overlapping. */
+    top: calc(var(--header-h) + var(--mobile-bar-h));
+    left: 0;
+    right: 0;
+    z-index: 41;
+    max-height: calc(80vh - var(--header-h) - var(--mobile-bar-h));
+    overflow-y: auto;
+    background: var(--bg-raised);
+    border-bottom: 1px solid var(--border-glass-strong);
+    box-shadow: var(--shadow-card);
+  }
+  .progress-rail__mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-md) clamp(0.75rem, 3vw, 1.25rem);
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-glass);
+  }
+  .progress-rail__mobile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 52px;
+    padding: 0.75rem clamp(0.75rem, 3vw, 1.25rem);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border-glass);
+    text-align: left;
+    font-size: var(--fs-small);
+    color: var(--text-secondary);
+  }
+  .progress-rail__mobile-menu-item.is-active {
+    color: var(--text-primary);
+    background: var(--bg-glass-strong);
+    font-weight: 600;
+  }
+}
+
+/* ============ Section typography ============ */
+
+.section-title {
+  font-size: var(--fs-h2);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+  letter-spacing: var(--ls-tight);
+  max-width: 900px;
+  margin-bottom: var(--space-md);
+}
+
+.section-lead {
+  font-size: var(--fs-lead);
+  line-height: var(--lh-relaxed);
+  color: var(--text-secondary);
+  max-width: 720px;
+  margin-bottom: var(--space-lg);
+}
+
+/* ============ Opening ============ */
+
+.opening-section__layout {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+.opening-section__title {
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  font-weight: 700;
+  letter-spacing: var(--ls-tight);
+  margin: var(--space-md) 0 var(--space-lg);
+  max-width: 15ch;
+}
+.opening-section__sub {
+  font-size: var(--fs-lead);
+  color: var(--text-secondary);
+  max-width: 46ch;
+  line-height: var(--lh-relaxed);
+  margin-bottom: var(--space-lg);
+}
+.opening-section__cta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.04em;
+  padding: 0.9rem 1.6rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-glass-strong);
+  background: var(--card-gradient);
+  color: var(--text-primary);
+  transition: all var(--duration-base) var(--ease-standard);
+}
+.opening-section__cta:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-glow);
+}
+.opening-section__visual {
+  min-height: 420px;
+}
+
+.hero-convergence {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+}
+.hero-convergence__field {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+}
+/* Outer element: purely positional. In orbit mode its top/left sit at the
+   field's centre and framer-motion drives x/y every frame; under reduced
+   motion it's given a fixed top/left percentage instead (see component) and
+   never moves again. */
+.hero-convergence__pill-orbit {
+  position: absolute;
+}
+/* Inner element: purely visual centring, static, never touched by the
+   orbit's per-frame transform — the two transforms live on different
+   elements so they can never fight. */
+.hero-convergence__pill {
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+.hero-convergence__core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(180px, 22vw, 240px);
+  height: clamp(200px, 24vw, 266px);
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 40px rgba(26, 186, 227, 0.35));
+}
+
+/* Simplified composition: below MIN_ORBIT_FIELD_DIMENSION the field becomes
+   a centred column (model, then a calm static row of labels) instead of an
+   absolutely-positioned orbit — see HeroConvergence.tsx for why. */
+.hero-convergence__field--simplified {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+}
+.hero-convergence__field--simplified .hero-convergence__core {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+}
+.hero-convergence__pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  max-width: 90%;
+}
+.hero-convergence__pill--static {
+  position: static;
+}
+
+/* Soft pulse for the orbiting labels — very low amplitude, staggered per
+   label via inline animation-delay so the field never beats in unison.
+   Nested inside the visual pill span so it never conflicts with the outer
+   orbit/entrance transform. Neutralised globally under
+   prefers-reduced-motion (global.css). */
+.hero-convergence__pill-inner {
+  display: inline-block;
+  animation-name: pill-pulse;
+  animation-duration: 6.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@keyframes pill-pulse {
+  0%, 100% { transform: scale(1); text-shadow: 0 0 0 rgba(26, 186, 227, 0); }
+  50% { transform: scale(1.035); text-shadow: 0 0 10px rgba(26, 186, 227, 0.45); }
+}
+
+/* Controlled, slow breathing glow behind the central symbol — "ambient
+   background motion" / "controlled glow or light movement" from the brief. */
+.hero-convergence__core-glow {
+  position: absolute;
+  inset: -32%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26, 186, 227, 0.32), transparent 70%);
+  animation: core-breathe 5s ease-in-out infinite;
+}
+@keyframes core-breathe {
+  0%, 100% { opacity: 0.6; transform: scale(0.94); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+/* The interactive 3D canvas fills its sizing wrapper (.hero-convergence__core)
+   exactly; r3f's <Canvas> sets its own width/height: 100% internally. */
+.hero-symbol3d {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+.hero-symbol3d:active {
+  cursor: grabbing;
+}
+.hero-symbol3d canvas {
+  outline: none;
+}
+.hero-symbol3d__fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-symbol3d__fallback img {
+  max-width: 100%;
+  max-height: 100%;
+}
+.hero-symbol3d__fallback-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@media (max-width: 900px) {
+  .opening-section__layout {
+    grid-template-columns: 1fr;
+  }
+  .opening-section__visual {
+    min-height: 320px;
+    order: -1;
+  }
+  .hero-convergence,
+  .hero-convergence__field {
+    min-height: 320px;
+  }
+  .hero-convergence__pill {
+    font-size: var(--fs-eyebrow);
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+/* ============ Comparison panel (Problem section) ============ */
+
+.comparison-panel__flows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  align-items: start;
+}
+.flow-strip {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+}
+.flow-strip--old {
+  background: rgba(153, 165, 172, 0.06);
+}
+.flow-strip--new {
+  background: var(--card-gradient);
+  border-color: var(--border-glass-strong);
+}
+
+/* One tracking model as a connected chain of step chips — see
+   ComparisonPanel.tsx for why this replaced a plain arrow-separated line. */
+.flow-chain {
+  position: relative;
+  margin-top: var(--space-sm);
+  /* Room below the row for the Ymirr variant's loop-back curve; the
+     traditional variant's dead-end tick doesn't need it, but keeping both
+     the same height keeps the two cards visually aligned side by side. */
+  padding-bottom: 2.25rem;
+}
+.flow-chain__steps {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+.flow-chain__slot {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.flow-chain__step {
+  flex: none;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-glass);
+  background: rgba(1, 22, 33, 0.4);
+}
+.flow-chain__step--accent {
+  color: var(--text-primary);
+  border-color: var(--color-primary-30);
+  background: rgba(26, 186, 227, 0.08);
+}
+.flow-chain__link {
+  flex: 1 1 auto;
+  min-width: 1.25rem;
+  height: 10px;
+  margin: 0 0.15rem;
+  overflow: visible;
+}
+.flow-chain__deadend {
+  flex: none;
+  width: 1.75rem;
+  height: 10px;
+  margin-left: 0.15rem;
+  opacity: 0.5;
+  mask-image: linear-gradient(to right, black, transparent);
+}
+.flow-chain__loop {
+  position: absolute;
+  left: 0;
+  bottom: 0.9rem;
+  width: 100%;
+  height: 1.4rem;
+  overflow: visible;
+}
+.flow-chain__caption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-size: var(--fs-eyebrow);
+  color: var(--text-muted);
+  max-width: 100%;
+}
+
+.comparison-panel__table {
+  padding: var(--space-md);
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: var(--space-md);
+}
+.comparison-panel__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border-right: 1px solid var(--border-glass);
+  padding-right: var(--space-md);
+}
+.comparison-panel__row-btn {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.6rem 0.7rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: var(--fs-small);
+}
+.comparison-panel__row-btn.is-active {
+  background: var(--bg-glass-strong);
+  color: var(--text-primary);
+}
+.comparison-panel__detail-frame {
+  position: relative;
+}
+.comparison-panel__detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  align-content: start;
+}
+.comparison-panel__col--accent {
+  border-left: 2px solid var(--color-primary);
+  padding-left: var(--space-md);
+}
+
+@media (max-width: 720px) {
+  .comparison-panel__flows {
+    grid-template-columns: 1fr;
+  }
+  .comparison-panel__table,
+  .comparison-panel__detail {
+    grid-template-columns: 1fr;
+  }
+  .comparison-panel__rows {
+    border-right: none;
+    border-bottom: 1px solid var(--border-glass);
+    padding-right: 0;
+    padding-bottom: var(--space-sm);
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .comparison-panel__col--accent {
+    border-left: none;
+    border-top: 2px solid var(--color-primary);
+    padding-left: 0;
+    padding-top: var(--space-sm);
+  }
+}
+
+/* ============ Principle section ============ */
+
+/* The governed-system diagram: three input actors converge into one shared
+   pipeline and diverge into one coordinated outcome. Desktop: a single
+   horizontal row (inputs | pipeline | outcome). See PrincipleSection.tsx. */
+.governance-diagram {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+.governance-diagram__inputs {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 180px;
+}
+.governance-diagram__pipeline {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+  min-width: 0;
+}
+.governance-diagram__stage-slot {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.governance-diagram__stage-link {
+  flex: 1 1 auto;
+  min-width: 0.75rem;
+  height: 10px;
+  margin: 0 0.1rem;
+}
+.governance-diagram__merge {
+  flex: none;
+  width: 1.75rem;
+  height: 10px;
+}
+.governance-diagram__merge-link {
+  height: 10px;
+}
+.governance-diagram__detail {
+  min-height: 1.6rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  font-size: var(--fs-small);
+  margin-bottom: var(--space-lg);
+}
+.governance-diagram__detail strong {
+  color: var(--text-primary);
+}
+
+.governance-node {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+}
+.governance-node--input {
+  padding: 0.6rem 0.8rem;
+}
+.governance-node--input .governance-node__name {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: var(--fs-small);
+}
+.governance-node--input .governance-node__detail {
+  font-size: var(--fs-eyebrow);
+  color: var(--text-muted);
+  line-height: var(--lh-snug);
+}
+.governance-node--stage {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(1, 22, 33, 0.5);
+  padding: 0.4rem 0.7rem;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  transition: all var(--duration-base) var(--ease-standard);
+}
+.governance-node--stage .governance-node__index {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  color: var(--text-muted);
+}
+.governance-node--stage .governance-node__name {
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+.governance-node--stage:hover,
+.governance-node--stage:focus-visible {
+  border-color: var(--border-glass-strong);
+}
+.governance-node--stage.is-active {
+  border-color: var(--color-primary);
+  background: rgba(26, 186, 227, 0.12);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-glow);
+}
+.governance-node--stage.is-active .governance-node__index {
+  color: var(--color-primary);
+}
+.governance-node--outcome {
+  flex: none;
+  width: 200px;
+  padding: 0.7rem 0.9rem;
+  border-color: var(--border-glass-strong);
+  background: var(--card-gradient);
+}
+.governance-node--outcome .governance-node__name {
+  font-weight: 700;
+  font-size: var(--fs-small);
+  margin-bottom: 0.2rem;
+}
+.governance-node--outcome .governance-node__detail {
+  font-size: var(--fs-eyebrow);
+  color: var(--text-secondary);
+  line-height: var(--lh-snug);
+}
+
+@media (max-width: 900px) {
+  .governance-diagram {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .governance-diagram__inputs {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .governance-diagram__inputs .governance-node--input {
+    flex: 1 1 160px;
+  }
+  .governance-diagram__merge {
+    width: 100%;
+    height: 1.4rem;
+    transform: rotate(90deg);
+  }
+  .governance-diagram__pipeline {
+    flex-wrap: wrap;
+  }
+  .governance-node--outcome {
+    width: 100%;
+  }
+}
+
+.principle-secondary {
+  margin-bottom: var(--space-lg);
+  max-width: 720px;
+}
+.principle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+.principle-grid__quote {
+  padding: var(--space-md);
+}
+.principle-grid__quote--accent {
+  border-color: var(--border-glass-strong);
+  background: var(--card-gradient);
+}
+
+/* Tone of voice — deliberately separated from the operational diagram
+   above (different card shape, no button affordance) so it reads as brand
+   voice guidance, not a list of system capabilities. */
+.voice-strip {
+  border-top: 1px solid var(--border-glass);
+  padding-top: var(--space-md);
+}
+.voice-strip__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-sm);
+}
+.voice-strip__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.voice-strip__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  flex: 1 1 200px;
+}
+.voice-strip__name {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: var(--fs-small);
+}
+.voice-strip__body {
+  color: var(--text-muted);
+  font-size: var(--fs-eyebrow);
+}
+
+@media (max-width: 760px) {
+  .principle-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============ Journey flow ============ */
+
+.journey-flow__diagram {
+  position: relative;
+  margin-bottom: var(--space-lg);
+}
+.journey-flow__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.journey-flow__loop-label {
+  fill: var(--text-muted);
+  font-size: var(--fs-eyebrow);
+  font-family: var(--font-mono);
+}
+.journey-flow__nodes {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding-top: var(--space-xl);
+  padding-bottom: 3.2rem;
+}
+.journey-flow__node-slot {
+  display: flex;
+  justify-content: center;
+}
+.journey-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: var(--space-sm) var(--space-xs);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: none;
+  color: var(--text-secondary);
+  min-width: 108px;
+  transition: all var(--duration-base) var(--ease-standard);
+}
+.journey-node__index {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  color: var(--text-muted);
+}
+.journey-node__name {
+  font-weight: 600;
+  font-size: var(--fs-small);
+}
+.journey-node.is-active {
+  border-color: var(--border-glass-strong);
+  background: var(--card-gradient);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-glow);
+}
+.journey-node.is-active .journey-node__index {
+  color: var(--color-primary);
+}
+
+.journey-flow__panel {
+  padding: var(--space-lg);
+}
+.journey-flow__panel-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--space-lg);
+}
+.journey-flow__panel-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+@media (max-width: 900px) {
+  .journey-flow__svg {
+    display: none;
+  }
+  .journey-flow__nodes {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding-top: 0;
+  }
+  .journey-node {
+    flex-direction: row;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+  .journey-flow__panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============ Shared bits: labels, chips, notes ============ */
+
+.module-card__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-accent);
+  margin-bottom: 0.35rem;
+}
+.module-card__text {
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--text-secondary);
+  max-width: var(--measure);
+}
+.module-card__stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+.tag-chip {
+  font-size: var(--fs-eyebrow);
+  font-family: var(--font-mono);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+}
+.tag-chip--entity {
+  border-color: var(--color-primary-30);
+  color: var(--color-primary-40);
+}
+.tag-chip--warn {
+  border-color: rgba(230, 180, 90, 0.5);
+  color: #e6b45a;
+}
+.module-card__note {
+  font-size: var(--fs-small);
+  color: #e6b45a;
+  background: rgba(230, 180, 90, 0.08);
+  border: 1px solid rgba(230, 180, 90, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+}
+
+/* ============ Module grid / card ============ */
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: var(--space-lg);
+}
+.filter-chip {
+  font-size: var(--fs-small);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-glass);
+  background: none;
+  color: var(--text-muted);
+}
+.filter-chip.is-active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(26, 186, 227, 0.08);
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+.module-card {
+  padding: var(--space-md);
+}
+.module-card__trigger {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+}
+.module-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+.module-icon--official img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.module-icon--fallback {
+  border: 1px dashed var(--border-glass-strong);
+  border-radius: 50%;
+}
+.module-card__heading {
+  display: flex;
+  flex-direction: column;
+}
+.module-card__name {
+  font-weight: 600;
+  font-size: var(--fs-emphasis);
+}
+.module-card__tagline {
+  font-size: var(--fs-eyebrow);
+  color: var(--text-muted);
+}
+.module-card__chevron {
+  font-size: var(--fs-emphasis);
+  color: var(--text-muted);
+  width: 24px;
+  text-align: center;
+}
+.module-card__role {
+  margin-top: var(--space-sm);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  line-height: var(--lh-normal);
+  max-width: var(--measure);
+}
+.module-card__details {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-glass);
+}
+
+/* ============ Ecosystem map ============ */
+
+.ecosystem-map {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.ecosystem-map__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: var(--space-md);
+}
+
+/* Source order is Product -> Core -> Foundation, which a plain top-to-bottom
+   column already renders as Product on top and Foundation at the base —
+   the vertical order itself carries the "grows from a foundation" metaphor,
+   no literal tree/roots imagery needed. */
+.ecosystem-map__diagram {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-md) 0;
+}
+.ecosystem-map__lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.ecosystem-map__band {
+  position: relative;
+  z-index: 2;
+}
+.ecosystem-map__band-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-sm);
+}
+.ecosystem-map__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.ecosystem-map__row--product {
+  gap: var(--space-md);
+}
+
+.arch-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.3rem;
+  background: rgba(1, 22, 33, 0.5);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-base) var(--ease-standard);
+}
+.arch-node.is-dimmed {
+  opacity: 0.35;
+}
+.arch-node.is-related,
+.arch-node.is-open {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-glow);
+}
+.arch-node__name {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.arch-node.is-related .arch-node__name,
+.arch-node.is-open .arch-node__name {
+  color: var(--text-primary);
+}
+.arch-node__tagline {
+  font-size: var(--fs-eyebrow);
+  color: var(--text-muted);
+}
+.arch-node__badge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e6b45a;
+  border: 1px solid rgba(230, 180, 90, 0.4);
+  border-radius: var(--radius-pill);
+  padding: 0.1rem 0.4rem;
+}
+
+/* Core ecosystem — compact nodes, most of them. */
+.arch-node--core {
+  width: 108px;
+  padding: 0.7rem 0.5rem;
+}
+
+/* Product entities — deliberately larger and higher-contrast than core
+   nodes: this is the layer customers actually buy or run. */
+.arch-node--product {
+  width: 168px;
+  padding: var(--space-md);
+  background: var(--card-gradient);
+  border-color: var(--border-glass-strong);
+}
+.arch-node--product .arch-node__name {
+  font-size: var(--fs-emphasis);
+}
+
+/* Foundation — a single wide anchor, not a stack of peer nodes. */
+.arch-node--foundation {
+  width: min(320px, 100%);
+  flex-direction: row;
+  justify-content: flex-start;
+  text-align: left;
+  padding: var(--space-md) var(--space-lg);
+  background: rgba(178, 214, 241, 0.04);
+  border-color: var(--border-glass-strong);
+}
+.arch-node--foundation .arch-node__name {
+  font-size: var(--fs-emphasis);
+}
+
+.ecosystem-map__detail {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  min-height: 4.5rem;
+}
+
+@media (max-width: 720px) {
+  .arch-node--core {
+    width: calc(50% - 0.3rem);
+  }
+  .arch-node--product {
+    width: calc(50% - 0.3rem);
+  }
+}
+
+/* ============ Product entities ============ */
+
+.entity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+}
+.entity-card {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass-strong);
+  background: var(--card-gradient);
+  box-shadow: var(--shadow-card);
+}
+.entity-card__icon-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.entity-card__glow {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle, rgba(26, 186, 227, 0.25), transparent 70%);
+  filter: blur(6px);
+}
+.entity-card__icon {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.5));
+}
+.entity-card__name {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  margin: 0.2rem 0 var(--space-sm);
+}
+.entity-card__desc {
+  color: var(--text-secondary);
+  line-height: var(--lh-normal);
+  margin-bottom: var(--space-sm);
+}
+.entity-card__contribution {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+.entity-card__trigger {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+  background: none;
+  border: 1px solid var(--color-primary-30);
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 1rem;
+}
+.entity-card__details {
+  overflow: hidden;
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  color: var(--text-secondary);
+  font-size: var(--fs-small);
+}
+
+@media (max-width: 900px) {
+  .entity-grid {
+    grid-template-columns: 1fr;
+  }
+  .entity-card {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+  .entity-card__icon-stage {
+    justify-content: flex-start;
+  }
+}
+
+/* ============ Scenario ============ */
+
+.scenario-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--fs-small);
+  color: #e6b45a;
+  background: rgba(230, 180, 90, 0.08);
+  border: 1px solid rgba(230, 180, 90, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.9rem;
+  margin-bottom: var(--space-md);
+}
+.scenario-purpose {
+  padding: var(--space-md);
+  margin-bottom: var(--space-xl);
+  max-width: 640px;
+}
+.scenario-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  position: relative;
+}
+.scenario-timeline__item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: var(--space-md);
+}
+.scenario-timeline__marker {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.scenario-timeline__marker span {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  border: 1px solid var(--border-glass-strong);
+  color: var(--color-primary);
+  background: rgba(1, 22, 33, 0.6);
+}
+.scenario-timeline__content {
+  padding: var(--space-md) var(--space-lg);
+}
+
+/* ============ Business value ============ */
+
+.value-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-md);
+}
+.value-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  width: 100%;
+  padding: var(--space-md);
+  text-align: left;
+  background: rgba(178, 214, 241, 0.03);
+}
+.value-tile__index {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  color: var(--text-muted);
+}
+/* The transformation, always visible: current-state pain, a small arrow,
+   then the business result — legible at a glance before anyone clicks. */
+.value-tile__transform {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.value-tile__problem {
+  font-size: var(--fs-eyebrow);
+  color: var(--text-muted);
+  line-height: var(--lh-snug);
+}
+.value-tile__arrow {
+  font-size: var(--fs-eyebrow);
+  color: var(--color-primary-30);
+  line-height: 1;
+}
+.value-tile__title {
+  font-weight: 600;
+  font-size: var(--fs-body);
+  color: var(--text-primary);
+}
+.value-tile__mechanism {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all var(--duration-base) var(--ease-standard);
+}
+.value-tile__mechanism.is-visible {
+  max-height: 320px;
+  opacity: 1;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border-glass);
+}
+.value-tile__mechanism-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-accent);
+}
+.value-tile__mechanism-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.mechanism-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--fs-eyebrow);
+  padding: 0.2rem 0.55rem 0.2rem 0.3rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-glass-strong);
+  background: rgba(1, 22, 33, 0.5);
+  color: var(--text-secondary);
+}
+.mechanism-chip--entity {
+  border-color: var(--color-primary-30);
+}
+.mechanism-chip img {
+  border-radius: 4px;
+}
+.value-tile__mechanism-text {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  line-height: var(--lh-normal);
+}
+.value-tile.is-open {
+  border-color: var(--border-glass-strong);
+  background: var(--card-gradient);
+}
+
+/* ============ Closing ============ */
+
+.closing-assembly {
+  height: min(52vh, 460px);
+  position: relative;
+  margin-bottom: var(--space-lg);
+}
+.closing-assembly__field {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.closing-assembly__item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+}
+.closing-assembly__item img {
+  max-width: 100%;
+  max-height: 100%;
+}
+.closing-assembly__core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 50px rgba(26, 186, 227, 0.4));
+}
+
+.closing-statement {
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  max-width: 20ch;
+  text-align: center;
+  margin: 0 auto var(--space-xl);
+}
+
+.manifesto-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md) var(--space-xl);
+  max-width: 980px;
+  margin: 0 auto;
+}
+.manifesto-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border-top: 1px solid var(--border-glass);
+  padding-top: 0.7rem;
+}
+.manifesto-list__title {
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: var(--fs-small);
+}
+.manifesto-list__body {
+  color: var(--text-secondary);
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+}
+
+@media (max-width: 720px) {
+  .manifesto-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.closing-notes {
+  max-width: 720px;
+  margin: var(--space-xl) auto 0;
+  border-top: 1px solid var(--border-glass);
+  padding-top: var(--space-md);
+}
+.closing-notes__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  text-align: left;
+}
+.closing-notes__toggle:hover {
+  color: var(--text-secondary);
+}
+.closing-notes__chevron {
+  margin-left: auto;
+  font-family: var(--font-mono);
+}
+.closing-notes__list {
+  padding-top: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.closing-notes__list li {
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--text-muted);
+  padding-left: 1.1rem;
+  position: relative;
+}
+.closing-notes__list li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--color-primary-30);
+}
